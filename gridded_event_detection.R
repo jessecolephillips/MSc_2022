@@ -12,7 +12,7 @@ library(doParallel) # For parallel processing
 
 
 # Load Data ---------------------------------------------------------------
-OISST <- readRDS("~/Documents/MHW_2022/OISST_vignette.Rds")
+OISST <- readRDS("OISST_vignette.Rds")
 
 
 # Event Detection ---------------------------------------------------------
@@ -20,7 +20,7 @@ OISST <- readRDS("~/Documents/MHW_2022/OISST_vignette.Rds")
 # Initial wrapper function to combine calculations
 event_only <- function(df){
   # First calculate the climatologies
-  clim <- ts2clm(data = df, climatologyPeriod = c("1982-01-01", "2011-01-01"))
+  clim <- ts2clm(data = df, climatologyPeriod = c("1990-01-01", "2022-04-05"))
   # Then the events
   event <- detect_event(data = clim)
   # Return only the event metric dataframe of results
