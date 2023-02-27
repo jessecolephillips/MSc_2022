@@ -13,6 +13,8 @@ library(heatwaveR)
 
 data <- readRDS("OISST_False_Bay_March_2021.Rds")
 
+# Use heatwaveR data
+
 
 # Algorithm time ----------------------------------------------------------
 
