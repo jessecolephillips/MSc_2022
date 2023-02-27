@@ -32,28 +32,28 @@ rerddap::info(datasetid = "ncdcOisst21Agg", url = "https://coastwatch.pfeg.noaa.
 # Download Function
   # This function downloads and prepares data based on user provided start and end dates
 OISST_sub_dl <- function(time_df){
-  OISST_dat <- griddap(x = "ncdcOisst21Agg", 
+  OISST_dat <- griddap(datasetx = "ncdcOisst21Agg", 
                        url = "https://coastwatch.pfeg.noaa.gov/erddap/", 
                        time = c(time_df$start, time_df$end), 
                        zlev = c(0, 0),
-                       latitude = c(-38, -20),
-                       longitude = c(8, 35),
+                       latitude = c(-35, -33),
+                       longitude = c(17.5, 19.5), 
                        fields = "sst")$data %>% 
     mutate(time = as.Date(stringr::str_remove(time, "T00:00:00Z"))) %>% 
-    dplyr::rename(t = time, temp = sst) %>% 
+    dplyr::rename(t = time, temp = sst, lon = longitude, lat = latitude) %>% 
     select(lon, lat, t, temp) %>% 
     na.omit()
 }
 
 # Date Range
   # Date download range by start and end dates per year
-dl_years <- data.frame(date_index = 1:5,
+dl_years <- data.frame(date_index = 1:4,
                        start = as.Date(c("1990-01-01", 
                                          "1998-01-01", "2006-01-01", 
-                                         "2014-01-01", "2022-01-01")),
+                                         "2014-01-01")),
                        end = as.Date(c("1997-12-31", 
                                        "2005-12-31", "2013-12-31", 
-                                       "2021-12-31", "2022-04-05")))
+                                       "2021-12-31")))
 
 # Download/prep Data
   # Download all of the data with one nested request
@@ -68,10 +68,10 @@ system.time(
 
 # Visualise Data
 OISST_data %>% 
-  filter(t == "2022-04-05") %>% 
+  filter(t == "2021-03-28") %>% 
   ggplot(aes(x = lon, y = lat)) +
   geom_tile(aes(fill = temp)) +
-  borders() + # Activate this line to see the global map
+  #borders() + # Activate this line to see the global map
   scale_fill_viridis_c() +
   coord_quickmap(expand = F) +
   labs(x = NULL, y = NULL, fill = "SST (°C)") +
