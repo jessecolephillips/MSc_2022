@@ -36,8 +36,8 @@ OISST_sub_dl <- function(time_df){
                        url = "https://coastwatch.pfeg.noaa.gov/erddap/", 
                        time = c(time_df$start, time_df$end), 
                        zlev = c(0, 0),
-                       latitude = c(-35, -33),
-                       longitude = c(17.5, 19.5), 
+                       latitude = c(-37, -28),
+                       longitude = c(15, 34), 
                        fields = "sst")$data %>% 
     mutate(time = as.Date(stringr::str_remove(time, "T00:00:00Z"))) %>% 
     dplyr::rename(t = time, temp = sst, lon = longitude, lat = latitude) %>% 
@@ -48,12 +48,12 @@ OISST_sub_dl <- function(time_df){
 # Date Range
   # Date download range by start and end dates per year
 dl_years <- data.frame(date_index = 1:4,
-                       start = as.Date(c("1990-01-01", 
-                                         "1998-01-01", "2006-01-01", 
-                                         "2014-01-01")),
-                       end = as.Date(c("1997-12-31", 
-                                       "2005-12-31", "2013-12-31", 
-                                       "2021-12-31")))
+                       start = as.Date(c("1991-01-01", 
+                                         "1999-01-01", "2007-01-01", 
+                                         "2015-01-01")),
+                       end = as.Date(c("1998-12-31", 
+                                       "2006-12-31", "2014-12-31", 
+                                       "2022-12-31")))
 
 # Download/prep Data
   # Download all of the data with one nested request
@@ -79,7 +79,7 @@ OISST_data %>%
 
 # Save Data
 # Save the data as an .Rds file because it has a much better compression rate than .RData
-saveRDS(OISST_data, file = "OISST_vignette.Rds")
+saveRDS(OISST_data, file = "data/Southern_African_coastline.Rds")
 
 
 
@@ -94,7 +94,7 @@ OISST_base_url <- "https://www.ncei.noaa.gov/data/sea-surface-temperature-optimu
 
   # Now we create a data.frame that contains all of the dates we want to download
   # NB: In order to change the dates download changes the dates in the following line
-OISST_dates <- data.frame(t = seq(as.Date("2019-12-01"), as.Date("2019-12-31"), by = "day"))
+OISST_dates <- data.frame(t = seq(as.Date("2023-01-01"), as.Date("2023-01-07"), by = "day"))
 
   # To finish up this step we add some text to those dates so they match the OISST file names
 OISST_files <- OISST_dates %>% 
@@ -122,7 +122,7 @@ OISST_url_daily_dl <- function(target_URL){
   # The more cores used, the faster the data may be downloaded
     # It is best practice to not use all of the cores on one's machine
     # The laptop on which I am running this code has 4 cores, so I use 3 here
-doParallel::registerDoParallel(cores = 3)
+doParallel::registerDoParallel(cores = 2)
 
   # And with that we are clear for take off
 system.time(plyr::l_ply(OISST_files$file_name, .fun = OISST_url_daily_dl, .parallel = T)) # ~15 seconds
@@ -152,13 +152,13 @@ OISST_files <- dir("~/data/OISST", full.names = T)
 
   # Load the data in parallel
 OISST_dat <- plyr::ldply(.data = OISST_files, .fun = OISST_load, .parallel = T,
-                         lon1 = 270, lon2 = 320, lat1 = 30, lat2 = 50)
+                         lon1 = 0, lon2 = 360, lat1 = -90, lat2 = 90)
 
   # It should only take a few seconds to load one month of data depending on the size of the lon/lat extent chosen
 
 # Visualise Data
 OISST_dat %>% 
-  filter(t == "2019-12-01") %>% 
+  filter(t == "2023-01-01") %>% 
   ggplot(aes(x = lon, y = lat)) +
   geom_tile(aes(fill = temp)) +
   scale_fill_viridis_c() +
