@@ -9,6 +9,8 @@ library(tidyverse)
 library(heatwaveR)
 library(doParallel)
 library(ggpubr)
+library(tidync)
+library(data.table)
 
 
 # Functions ---------------------------------------------------------------
