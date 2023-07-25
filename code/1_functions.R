@@ -24,22 +24,32 @@ library(data.table)
   # Use detect_event() on a pixel, then store number of observations
   # Do this for each pixel in an area, then you'll have 'frequency' of events over an area 
 
+# NOTE
+  # - diff = h2c mextef
+  # + diff = c2h mextef
+
   # Data - plain Rds data [lon, lat, t, temp]
-create_atlas <- function(data, n_diff = 1){
+detect_mextefs <- function(data, n_diff = 1){
   # Calculate 1st/2nd/3rd/etc. differences
   sst_diff <- data |> mutate(diff = temp - lag(temp, n = n_diff))
   
   # Add 0 to rows with NA 
   
   
-  # Calculate Climatologies
-  clim_diff <- ts2clm(data = sst_diff, x = t, y = diff, climatologyPeriod = c("1991-01-02", "2022-12-31"), pctile = 10)
+  # Calculate Climatologies (both h2c and c2h)
+  clim_diff_c2h <- ts2clm(data = sst_diff, x = t, y = diff, climatologyPeriod = c("1991-01-01", "2021-12-31"), pctile = 95)
+  clim_diff_h2c <- ts2clm(data = sst_diff, x = t, y = diff, climatologyPeriod = c("1991-01-01", "2021-12-31"), pctile = 5)
   
-  # Detect Events
-  event <- detect_event(data = clim_diff, x = t, y = diff, minDuration = n_diff, coldSpells = T)
+  # Detect Events (both h2c and c2h)
+  event_c2h <- detect_event(data = clim_diff_c2h, x = t, y = diff, minDuration = n_diff)
+  event_h2c <- detect_event(data = clim_diff_h2c, x = t, y = diff, minDuration = n_diff, coldSpells = T)
   
-  # Return df of events only
-  return(event$event)
+  # Combine dfs of events only into a list
+  events_list <- list("c2h_events" = event_c2h$event, "h2c_events" = event_h2c$event)
+  
+  # Return list
+  return(events_list)
+  rm(clim_diff_h2c, clim_diff_c2h, event_h2c, event_c2h)
 }
 
 
