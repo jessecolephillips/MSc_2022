@@ -36,8 +36,8 @@ OISST_sub_dl <- function(time_df){
                        url = "https://coastwatch.pfeg.noaa.gov/erddap/", 
                        time = c(time_df$start, time_df$end), 
                        zlev = c(0, 0),
-                       latitude = c(-37, -28),
-                       longitude = c(15, 34), 
+                       latitude = c(41, 42),
+                       longitude = c(289, 290), 
                        fields = "sst")$data %>% 
     mutate(time = as.Date(stringr::str_remove(time, "T00:00:00Z"))) %>% 
     dplyr::rename(t = time, temp = sst, lon = longitude, lat = latitude) %>% 
@@ -71,15 +71,22 @@ OISST_data %>%
   filter(t == "2021-03-28") %>% 
   ggplot(aes(x = lon, y = lat)) +
   geom_tile(aes(fill = temp)) +
-  #borders() + # Activate this line to see the global map
+  borders() + # Activate this line to see the global map
   scale_fill_viridis_c() +
   coord_quickmap(expand = F) +
   labs(x = NULL, y = NULL, fill = "SST (°C)") +
   theme(legend.position = "bottom")
 
+# Visualise temperature profile
+OISST_data |> 
+  filter(between(t, as.Date('2022-11-01'), as.Date('2022-12-07'))) |>  
+  filter(lat == 41.875 & lon == 290.875) |> 
+  ggplot(aes(x = t, y = temp)) +
+  geom_line()
+
 # Save Data
 # Save the data as an .Rds file because it has a much better compression rate than .RData
-saveRDS(OISST_data, file = "data/Southern_African_coastline.Rds")
+saveRDS(OISST_data, file = "data/Cape_Cod_time_temp_raw.Rds")
 
 
 
@@ -94,7 +101,7 @@ OISST_base_url <- "https://www.ncei.noaa.gov/data/sea-surface-temperature-optimu
 
   # Now we create a data.frame that contains all of the dates we want to download
   # NB: In order to change the dates download changes the dates in the following line
-OISST_dates <- data.frame(t = seq(as.Date("2023-01-01"), as.Date("2023-01-07"), by = "day"))
+OISST_dates <- data.frame(t = seq(as.Date("2022-01-01"), as.Date("2022-12-31"), by = "day"))
 
   # To finish up this step we add some text to those dates so they match the OISST file names
 OISST_files <- OISST_dates %>% 
@@ -122,14 +129,16 @@ OISST_url_daily_dl <- function(target_URL){
   # The more cores used, the faster the data may be downloaded
     # It is best practice to not use all of the cores on one's machine
     # The laptop on which I am running this code has 4 cores, so I use 3 here
-doParallel::registerDoParallel(cores = 2)
+doParallel::registerDoParallel(cores = 3)
 
   # And with that we are clear for take off
-system.time(plyr::l_ply(OISST_files$file_name, .fun = OISST_url_daily_dl, .parallel = T)) # ~15 seconds
+system.time(plyr::l_ply(OISST_files$file_name, .fun = OISST_url_daily_dl, .parallel = T)) 
 
-  # In roughly 15 seconds a user may have a full month of global data downloaded
+  # In roughly 700 seconds a user may have a full year of global data downloaded (2 cores)
   # This scales well into years and decades, and is much faster with more cores
   # Download speeds will also depend on the speed of the users internet connection
+
+  # ~45 mins for 3 years of global ocean data (2 cores)
 
 # Load Data
   # This function will load and subset daily data into one data.frame
